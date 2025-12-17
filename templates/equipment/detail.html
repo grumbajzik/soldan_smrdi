@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.name }}{% endblock %}
+
+{% block content %}
+<div class="page__header">
+    <div class="page__titles">
+        <a href="/equipment_ui" style="text-decoration: none; color: var(--muted); font-size: 0.9rem;">← Zpět do katalogu</a>
+        <h2 class="page__title">{{ item.name }}</h2>
+    </div>
+</div>
+
+<div class="dashboard__columns">
+    <div class="dashboard__column dashboard__column--left">
+        <div class="card">
+            <div class="equipment-img" style="height: 300px; border-radius: 12px; margin-bottom: 20px;">
+                {% if item.image_path %}
+                    <img src="{{ url_for('static', path=item.image_path) }}" alt="{{ item.name }}">
+                {% else %}
+                    <span class="material-symbols-outlined" style="font-size: 64px; color: #ccc;">biotech</span>
+                {% endif %}
+            </div>
+            <h3>Popis</h3>
+            <p>{{ item.description or "Popis není k dispozici." }}</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <p><strong>Celkový stav skladu:</strong> {{ item.quantity_total }} ks</p>
+        </div>
+    </div>
+
+    <div class="dashboard__column dashboard__column--right">
+        <div class="card form-card">
+            <h3>Nová rezervace</h3>
+            
+            {% if not request.state.user %}
+                <p>Pro rezervaci se musíte <a href="/login">přihlásit</a>.</p>
+            {% else %}
+                <form method="post" action="/reservations/">
+                    <input type="hidden" name="equipment_id" value="{{ item.id }}">
+                    
+                    <label>
+                        Datum rezervace
+                        <input type="date" name="date" id="resDate" required min="{{ today }}">
+                    </label>
+
+                    <div id="availabilityBox" style="padding: 10px; background: #f9f9f9; border-radius: 8px; font-size: 0.9rem;">
+                        Vyberte datum pro ověření dostupnosti.
+                    </div>
+
+                    <label style="margin-top: 10px;">
+                        Poznámka (volitelné)
+                        <textarea name="comment" rows="2"></textarea>
+                    </label>
+
+                    <button type="submit" id="submitBtn" disabled>Rezervovat</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const dateInput = document.getElementById('resDate');
+    const availBox = document.getElementById('availabilityBox');
+    const submitBtn = document.getElementById('submitBtn');
+    const totalQty = {{ item.quantity_total }};
+    const equipId = {{ item.id }};
+
+    if(dateInput) {
+        // Nastavíme dnešní datum jako default
+        dateInput.valueAsDate = new Date();
+        checkAvailability(); // Zkontrolovat hned při načtení
+
+        dateInput.addEventListener('change', checkAvailability);
+    }
+
+    async function checkAvailability() {
+        const dateVal = dateInput.value;
+        if (!dateVal) return;
+
+        availBox.innerHTML = "Ověřuji dostupnost...";
+        availBox.style.color = "gray";
+        submitBtn.disabled = true;
+
+        try {
+            // Volání tvého nového endpointu
+            const response = await fetch(`/equipment/availability?target_date=${dateVal}`);
+            const data = await response.json();
+
+            // Najdeme aktuální item v poli výsledků
+            const currentItem = data.find(i => i.id === equipId);
+            
+            if (currentItem) {
+                const available = currentItem.quantity_available;
+                
+                if (available > 0) {
+                    availBox.innerHTML = `<span class="material-symbols-outlined" style="vertical-align: bottom; font-size: 18px; color: green;">check_circle</span> Na tento den je volných <strong>${available}</strong> ks.`;
+                    availBox.style.background = "#e6fffa";
+                    availBox.style.color = "#004d40";
+                    submitBtn.disabled = false;
+                } else {
+                    availBox.innerHTML = `<span class="material-symbols-outlined" style="vertical-align: bottom; font-size: 18px; color: red;">block</span> Na tento den je vše obsazeno.`;
+                    availBox.style.background = "#fff5f5";
+                    availBox.style.color = "#822727";
+                    submitBtn.disabled = true;
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            availBox.innerText = "Chyba při ověřování dostupnosti.";
+        }
+    }
+</script>
+{% endblock %}

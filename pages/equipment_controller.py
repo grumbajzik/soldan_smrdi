@@ -1,6 +1,6 @@
 from datetime import date
-
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+from fastapi.templating import Jinja2Templates
 from typing import List
 from services.equipment_service import EquipmentService
 from schemas.equipment_schema import EquipmentCreateSchema, EquipmentUpdateSchema, EquipmentAvailabilitySchema
@@ -8,6 +8,7 @@ from dependencies.dependencies import get_current_user
 
 router = APIRouter(prefix="/equipment", tags=["equipment"])
 equipment_service = EquipmentService()
+templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_model=List[dict])
 def get_all_equipment():
@@ -49,3 +50,13 @@ def get_equipment_availability(target_date: date = Query(..., description="Datum
     Vrátí seznam vybavení s počtem dostupných kusů pro konkrétní den.
     """
     return equipment_service.get_available_on_date(target_date)
+#
+# @router.get("/equipment_ui", include_in_schema=False)
+# async def list_ui(request: Request):
+#     items = equipment_service.get_all()
+#     return templates.TemplateResponse("equipment/list.html", {"request": request, "equipment": items})
+#
+# @router.get("/equipment/{item_id}", include_in_schema=False)
+# async def detail_ui(request: Request, item_id: int):
+#     item = equipment_service.get_by_id(item_id)
+#     return templates.TemplateResponse("equipment/detail.html", {"request": request, "item": item, "today": date.today()})

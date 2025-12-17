@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Moje Rezervace{% endblock %}
+
+{% block content %}
+<div class="page__header">
+    <div class="page__titles">
+        <span class="page__kicker">Historie</span>
+        <h2 class="page__title">Moje rezervace</h2>
+    </div>
+</div>
+
+<div class="card table-card">
+    {% if reservations|length == 0 %}
+        <p style="padding: 20px;">Nemáte žádné aktivní rezervace.</p>
+    {% else %}
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Vybavení</th>
+                    <th>Stav</th>
+                    <th>Poznámka</th>
+                    <th>Poslední změna</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in reservations %}
+                <tr>
+                    <td><strong>{{ res.date }}</strong></td>
+                    <td>
+                        ID Vybavení: {{ res.equipment_id }} 
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ res.status }}">
+                            {{ res.status }}
+                        </span>
+                    </td>
+                    <td>{{ res.comment or "" }}</td>
+                    <td style="color: var(--muted); font-size: 0.8rem;">
+                        {{ res.last_updated }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endblock %}

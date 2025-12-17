@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Přihlášení{% endblock %}
+
+{% block content %}
+<div class="page__header">
+    <h2 class="page__title">Přihlášení</h2>
+</div>
+
+<div style="max-width: 400px; margin: 0 auto;">
+    <div class="card form-card">
+        {% if error %}
+            <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form method="post" action="/login">
+            <label>
+                Uživatelské jméno
+                <input type="text" name="username" required autofocus>
+            </label>
+            
+            <label>
+                Heslo
+                <input type="password" name="password" required>
+            </label>
+
+            <button type="submit" style="width: 100%; margin-top: 10px;">Přihlásit se</button>
+        </form>
+        
+        <p style="text-align: center; margin-top: 20px; font-size: 0.9rem;">
+            Ještě nemáte účet? <a href="/register">Zaregistrujte se</a>.
+        </p>
+    </div>
+</div>
+{% endblock %}

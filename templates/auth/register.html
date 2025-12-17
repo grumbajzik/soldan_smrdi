@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Registrace{% endblock %}
+
+{% block content %}
+<div class="page__header">
+    <h2 class="page__title">Registrace</h2>
+</div>
+
+<div style="max-width: 400px; margin: 0 auto;">
+    <div class="card form-card">
+        {% if error %}
+            <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form method="post" action="/register">
+            <label>
+                Uživatelské jméno (login)
+                <input type="text" name="username" required>
+            </label>
+
+            <label>
+                Celé jméno (zobrazované)
+                <input type="text" name="name" required>
+            </label>
+            
+            <label>
+                Heslo
+                <input type="password" name="password" required>
+            </label>
+
+            <button type="submit" style="width: 100%; margin-top: 10px;">Vytvořit účet</button>
+        </form>
+        
+        <p style="text-align: center; margin-top: 20px; font-size: 0.9rem;">
+            Již máte účet? <a href="/login">Přihlaste se</a>.
+        </p>
+    </div>
+</div>
+{% endblock %}
