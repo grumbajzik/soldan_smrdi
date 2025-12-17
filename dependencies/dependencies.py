@@ -48,5 +48,23 @@ def create_access_token(user_id: int, expires_hours: int = 8):
     return token
 
 
+def get_user_from_request(request: Request):
+    token = request.cookies.get("access_token")
+    if not token:
+        return None
+
+    if token.startswith("Bearer "):
+        token = token.replace("Bearer ", "")
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        if user_id is None:
+            return None
+        return get_user_by_id(user_id)
+    except JWTError:
+        return None
+
+
 def is_admin(user: dict) -> bool:
     return bool(user and user.get("is_admin"))
