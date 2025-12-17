@@ -1,6 +1,6 @@
 from datetime import timedelta, datetime
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials # Importujeme HTTPBearer
 from jose import JWTError, jwt
 from repositories.user_respository import get_user_by_id
 
@@ -8,10 +8,15 @@ from repositories.user_respository import get_user_by_id
 SECRET_KEY = "CHANGE_ME_SECRET"
 ALGORITHM = "HS256"
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
+# 1. Definujeme bezpečnostní schéma (tohle řekne Swaggeru: "Používáme Bearer tokeny")
+security = HTTPBearer()
 
-
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """
+    HTTPBearer automaticky zkontroluje hlavičku Authorization,
+    ověří, že začíná na "Bearer ", a vrátí credentials objekt.
+    """
+    token = credentials.credentials  # Zde je samotný token (string)
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -36,25 +41,11 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 def create_access_token(user_id: int, expires_hours: int = 8):
     payload = {
-        "sub": user_id,
-        "exp": datetime.now() + timedelta(hours=expires_hours)
+        "sub": str(user_id),
+        "exp": datetime.utcnow() + timedelta(hours=expires_hours)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token
-
-
-# def get_all_shoes() -> list[Dict]:
-#     query = """
-#             SELECT id, \
-#                    name, \
-#                    description, \
-#                    quantity_total
-#             FROM equipment  """
-#
-#     with open_connection() as c:
-#         equipments = c.execute(query).fetchall()
-#         return equipments
-
 
 def is_admin(user: dict) -> bool:
     return bool(user and user.get("is_admin"))

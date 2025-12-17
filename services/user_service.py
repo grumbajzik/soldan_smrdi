@@ -3,9 +3,6 @@ import repositories.user_respository as user_repository
 
 
 class UserService:
-    """
-    Business logika nad uživateli.
-    """
 
     @staticmethod
     def register(username: str, name: str, password: str) -> int:
