@@ -5,7 +5,7 @@ from schemas.user_schemas import (
     UserLoginSchema,
     UserUpdateSchema,
 )
-from Dependencies import get_current_user, create_access_token
+from dependencies.dependencies import get_current_user, create_access_token
 
 router = APIRouter(prefix="/users", tags=["users"])
 
